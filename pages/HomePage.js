@@ -12,9 +12,13 @@ import ListComponent from '../components/Lists/ListComponent';
 import axios from 'axios';
 import ModalComponent from '../components/Modals/ModalComponent';
 
-const HomePage = () => {
+const HomePage = ({ navigation }) => {
   const [devices, setDevices] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclose();
+
+  const navigationDetails = deviceId => {
+    navigation.navigate('Detail Page', { deviceId });
+  };
 
   const getAllDevices = useCallback(async () => {
     try {
@@ -66,7 +70,7 @@ const HomePage = () => {
         data={devices}
         renderItem={({ item }) => {
           return (
-            <Pressable onPress={() => console.log(`pressed ${item.name}`)}>
+            <Pressable onPress={() => navigationDetails(item.id)}>
               <ListComponent deviceName={item.name} deviceId={item.id} />
             </Pressable>
           );
