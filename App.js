@@ -8,10 +8,11 @@
 import React from 'react';
 import { NativeBaseProvider } from 'native-base';
 import AppNavigator from './routes/HomeNavigator';
+import theme from './style/theme';
 
 function App() {
   return (
-    <NativeBaseProvider>
+    <NativeBaseProvider theme={theme}>
       <AppNavigator />
     </NativeBaseProvider>
   );
