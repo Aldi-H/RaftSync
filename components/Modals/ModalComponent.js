@@ -80,7 +80,7 @@ const ModalComponent = ({ isOpen, onClose }) => {
                 _text={{
                   fontSize: 'xs',
                 }}>
-                Terdapat Dalam Kotak Penjualan
+                Tersedia Dalam Kotak Penjualan
               </FormControl.HelperText>
             </FormControl>
             <FormControl isRequired>
@@ -99,7 +99,7 @@ const ModalComponent = ({ isOpen, onClose }) => {
                 _text={{
                   fontSize: 'xs',
                 }}>
-                Terdapat Dalam Kotak Penjualan
+                Tersedia Dalam Kotak Penjualan
               </FormControl.HelperText>
             </FormControl>
           </VStack>
