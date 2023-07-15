@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import { Keyboard, Platform } from 'react-native';
 import {
@@ -41,6 +42,13 @@ const useKeyboardBottomInset = () => {
 const ModalComponent = ({ isOpen, onClose, onSubmit }) => {
   const bottomInset = useKeyboardBottomInset();
 
+  const inputSchema = Yup.object().shape({
+    id: Yup.string().max(6, 'Too Long!').required('Id Device Harus Diisi'),
+    name: Yup.string().required('Nama Device Harus Diisi'),
+    thingerUrl: Yup.string().required('Url Harus Diisi'),
+    thingerBearer: Yup.string().required('Bearer Harus Diisi'),
+  });
+
   const formik = useFormik({
     initialValues: {
       id: '',
@@ -48,6 +56,8 @@ const ModalComponent = ({ isOpen, onClose, onSubmit }) => {
       thingerUrl: '',
       thingerBearer: '',
     },
+
+    validationSchema: inputSchema,
 
     onSubmit: (values, { resetForm }) => {
       onSubmit(values);
@@ -75,6 +85,7 @@ const ModalComponent = ({ isOpen, onClose, onSubmit }) => {
                 placeholder="Id Device"
                 onChangeText={formik.handleChange('id')}
                 value={formik.values.id}
+                isInvalid={!!formik.errors.id}
               />
               {formik.errors.id && formik.touched.id && (
                 <FormControl.ErrorMessage>
@@ -97,6 +108,7 @@ const ModalComponent = ({ isOpen, onClose, onSubmit }) => {
                 placeholder="Nama Device"
                 onChangeText={formik.handleChange('name')}
                 value={formik.values.name}
+                isInvalid={!!formik.errors.name}
               />
               {formik.errors.name && formik.touched.name && (
                 <FormControl.ErrorMessage>
@@ -119,6 +131,7 @@ const ModalComponent = ({ isOpen, onClose, onSubmit }) => {
                 placeholder="Url"
                 onChangeText={formik.handleChange('thingerUrl')}
                 value={formik.values.thingerUrl}
+                isInvalid={!!formik.errors.thingerUrl}
               />
               {formik.errors.thingerUrl && formik.touched.thingerUrl && (
                 <FormControl.ErrorMessage>
@@ -147,6 +160,7 @@ const ModalComponent = ({ isOpen, onClose, onSubmit }) => {
                 placeholder="Token"
                 onChangeText={formik.handleChange('thingerBearer')}
                 value={formik.values.thingerBearer}
+                isInvalid={!!formik.errors.thingerBearer}
               />
               {formik.errors.thingerBearer && formik.touched.thingerBearer && (
                 <FormControl.ErrorMessage>
