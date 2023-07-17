@@ -1,40 +1,51 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Text, HStack, Button, Center } from 'native-base';
-import LineChartComponent from '../components/charts/LineChartComponent';
+import { HStack, Button, Center } from 'native-base';
 import axios from 'axios';
 import moment from 'moment';
 import { ScrollView, RefreshControl } from 'react-native-gesture-handler';
+
+import LineChartComponent from '../components/charts/LineChartComponent';
+import DetailCard from '../components/card/DetailCard';
 
 const DetailPage = ({ route }) => {
   const { deviceId } = route.params;
   const [refreshing, setRefreshing] = useState(false);
   const [chartData, setChartData] = useState([]);
-  const [timeChart, setTimeChart] = useState('');
+  const [periods, setPeriods] = useState('');
+  const [timeValue, setTimeValue] = useState('');
+  const [ppmValue, setPpmValue] = useState(0);
+  const [chartMode, setChartMode] = useState('on IoT');
 
   const getAllData = useCallback(async () => {
     try {
       //! measurements/${deviceId}?period=${time}
       //!
       const response = await axios.get(
-        `https://raft-backend-kgxdguejnq-et.a.run.app/measurements/${deviceId}?period=${timeChart}`,
+        `https://raft-backend-kgxdguejnq-et.a.run.app/measurements/${deviceId}?period=${periods}`,
       );
 
+      const timeData = response.data.results.map(dataItem =>
+        moment(dataItem.createdAt).utcOffset('+0700').format('D MMM YY'),
+      );
+
+      const ppmData = response.data.results.map(dataItem => dataItem.ppm);
+
       const showChartData = {
-        labels: response.data.results.map(dataItem =>
-          moment(dataItem.createdAt).utcOffset('+0700').format('HH:mm'),
-        ),
+        labels: timeData,
         datasets: [
           {
-            data: response.data.results.map(dataItem => dataItem.ppm),
+            data: ppmData,
           },
         ],
       };
 
       setChartData(showChartData);
+      setTimeValue(timeData[timeData.length - 1]);
+      setPpmValue(ppmData[ppmData.length - 1]);
     } catch (error) {
       console.error(error);
     }
-  }, [deviceId, timeChart]);
+  }, [deviceId, periods, setPpmValue]);
 
   useEffect(() => {
     getAllData();
@@ -43,13 +54,15 @@ const DetailPage = ({ route }) => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     getAllData();
-    setTimeChart('');
+    setPeriods('');
+    setChartMode('on IoT');
+    setPpmValue(0);
     setRefreshing(false);
   }, [getAllData]);
 
   const handleChangeTime = useCallback(
     time => {
-      setTimeChart(time);
+      setPeriods(time);
       getAllData();
     },
     [getAllData],
@@ -60,8 +73,16 @@ const DetailPage = ({ route }) => {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
-      <Text>Detail Page</Text>
-      <LineChartComponent lineData={chartData} />
+      <DetailCard timeValue={timeValue} ppmValue={ppmValue} />
+      <LineChartComponent lineData={chartData} Mode={chartMode} />
+      <Button.Group justifyContent="center" isAttached>
+        <Button variant="outline" onPress={() => setChartMode('on IoT')}>
+          on IoT
+        </Button>
+        <Button variant="outline" onPress={() => setChartMode('on Manual')}>
+          on Manual
+        </Button>
+      </Button.Group>
       <Center>
         <HStack space={8} justifyItems="center">
           {['1d', '1w'].map(time => (
@@ -75,8 +96,7 @@ const DetailPage = ({ route }) => {
                 fontWeight: '500',
                 fontStyle: 'normal',
                 fontSize: 'md',
-                color: time === timeChart ? 'coolGray.500' : 'coolGray.800',
-                // color: 'coolGray.700',
+                color: time === periods ? 'coolGray.500' : 'coolGray.800',
               }}
               onPress={() => handleChangeTime(time)}>
               {time}
