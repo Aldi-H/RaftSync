@@ -23,7 +23,7 @@ const HomePage = ({ navigation }) => {
   const getAllDevices = useCallback(async () => {
     try {
       const response = await axios.get(
-        'https://yuan-supabase-kgxdguejnq-et.a.run.app/devices',
+        'https://raft-backend-kgxdguejnq-et.a.run.app/devices',
       );
 
       const data = response.data.results.map(item => {
@@ -44,7 +44,7 @@ const HomePage = ({ navigation }) => {
     async values => {
       try {
         const response = await axios.post(
-          'https://yuan-supabase-kgxdguejnq-et.a.run.app/devices',
+          'https://raft-backend-kgxdguejnq-et.a.run.app/devices',
           values,
         );
 
