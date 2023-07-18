@@ -15,7 +15,7 @@ const LineChartComponent = ({ lineData, hidePointsAtIndex, Mode }) => {
   }
 
   return (
-    <Flex>
+    <Flex rounded="lg" w="full">
       <Center>
         {lineData.datasets[0].length > 0 ? (
           <ChartNotFound Mode={Mode} />
