@@ -1,20 +1,23 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { HStack, Button, Center } from 'native-base';
+
 import axios from 'axios';
 import moment from 'moment';
 import { ScrollView, RefreshControl } from 'react-native-gesture-handler';
 
-import LineChartComponent from '../components/charts/LineChartComponent';
+import ChartNotFound from '../components/card/ChartNotFound';
 import DetailCard from '../components/card/DetailCard';
+import LineAreaChartComponent from '../components/charts/LineAreaChartComponent';
 
 const DetailPage = ({ route }) => {
   const { deviceId } = route.params;
   const [refreshing, setRefreshing] = useState(false);
   const [chartData, setChartData] = useState([]);
+  const [xAxisDateValue, setXAxisDateValue] = useState([]);
+  const [yAxisPpmValue, setYAxisPpmValue] = useState([]);
   const [periods, setPeriods] = useState('');
-  const [timeValue, setTimeValue] = useState('');
+  const [timeDetailValue, setDetailTimeValue] = useState('');
   const [ppmValue, setPpmValue] = useState(0);
-  const [chartMode, setChartMode] = useState('on IoT');
 
   const getAllData = useCallback(async () => {
     try {
@@ -30,17 +33,21 @@ const DetailPage = ({ route }) => {
 
       const ppmData = response.data.results.map(dataItem => dataItem.ppm);
 
-      const showChartData = {
-        labels: timeData,
-        datasets: [
-          {
-            data: ppmData,
-          },
-        ],
-      };
+      // const showChartData = {
+      //   labels: timeData,
+      //   datasets: [
+      //     {
+      //       data: ppmData,
+      //     },
+      //   ],
+      // };
 
-      setChartData(showChartData);
-      setTimeValue(timeData[timeData.length - 1]);
+      console.log(response.data.results);
+
+      setChartData(response.data.results);
+      setXAxisDateValue(timeData);
+      setYAxisPpmValue(ppmData);
+      setDetailTimeValue(timeData[timeData.length - 1]);
       setPpmValue(ppmData[ppmData.length - 1]);
     } catch (error) {
       console.error(error);
@@ -55,7 +62,6 @@ const DetailPage = ({ route }) => {
     setRefreshing(true);
     getAllData();
     setPeriods('');
-    setChartMode('on IoT');
     setPpmValue(0);
     setRefreshing(false);
   }, [getAllData]);
@@ -73,29 +79,64 @@ const DetailPage = ({ route }) => {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
-      <DetailCard timeValue={timeValue} ppmValue={ppmValue} />
-      <LineChartComponent lineData={chartData} Mode={chartMode} />
-      <Button.Group justifyContent="center" isAttached>
-        <Button variant="outline" onPress={() => setChartMode('on IoT')}>
-          on IoT
-        </Button>
-        <Button variant="outline" onPress={() => setChartMode('on Manual')}>
-          on Manual
-        </Button>
-      </Button.Group>
+      <DetailCard timeValue={timeDetailValue} ppmValue={ppmValue} />
+      {chartData.length === 0 ? (
+        <ChartNotFound />
+      ) : (
+        <LineAreaChartComponent
+          dateValue={xAxisDateValue}
+          ppmValue={yAxisPpmValue}
+        />
+      )}
+
       <Center>
-        <HStack space={8} justifyItems="center">
+        {/* <Box my="2" maxW="80" w="full" mx="1">
+          <HStack justifyItems="center" py="0">
+            <Button.Group isAttached size="xs">
+              <Button
+                borderLeftRadius="full"
+                variant={chartMode === 'IoT' ? 'solid' : 'outline'}
+                onPress={() => setChartMode('IoT')}
+                w="50%"
+                _text={{
+                  fontFamily: 'mono',
+                  fontWeight: '700',
+                  fontStyle: 'normal',
+                  fontSize: 'sm',
+                  color: chartMode === 'IoT' ? 'coolGray.50' : 'coolGray.800',
+                }}>
+                IoT
+              </Button>
+              <Button
+                borderRightRadius="full"
+                variant={chartMode === 'Manual' ? 'solid' : 'outline'}
+                onPress={() => setChartMode('Manual')}
+                w="50%"
+                _text={{
+                  fontFamily: 'mono',
+                  fontWeight: '700',
+                  fontStyle: 'normal',
+                  fontSize: 'sm',
+                  color:
+                    chartMode === 'Manual' ? 'coolGray.50' : 'coolGray.800',
+                }}>
+                Manual
+              </Button>
+            </Button.Group>
+          </HStack>
+        </Box> */}
+        <HStack mb="2" space={8} alignItems="center" justifyItems="center">
           {['1d', '1w'].map(time => (
             <Button
               key={time}
-              size="md"
+              size="lg"
               p={1}
               variant="ghost"
               _text={{
                 fontFamily: 'mono',
                 fontWeight: '500',
                 fontStyle: 'normal',
-                fontSize: 'md',
+                fontSize: 'lg',
                 color: time === periods ? 'coolGray.500' : 'coolGray.800',
               }}
               onPress={() => handleChangeTime(time)}>
