@@ -3,7 +3,7 @@ import { Box, HStack, Text, VStack } from 'native-base';
 
 const DetailCard = ({ ppmValue, timeValue }) => {
   return (
-    <Box alignItems="center" bg="blue.900">
+    <Box alignItems="center">
       <Box bg="white" maxW="80" rounded="lg" m="6" py="8" px="6" w="full">
         <VStack>
           <HStack space="2" justifyItems="center" alignItems="center">
