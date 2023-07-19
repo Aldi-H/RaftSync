@@ -2,17 +2,22 @@ import React from 'react';
 import { Dimensions } from 'react-native';
 import { Text, Box, HStack } from 'native-base';
 
-const ChartNotFound = ({ Mode }) => {
+const ChartNotFound = () => {
+  const apx = (size = 0) => {
+    let width = Dimensions.get('window').width;
+    return (width / 750) * size;
+  };
+
   return (
     <Box alignItems="center">
       <Box
         bg="white"
-        maxW="80"
+        maxW={apx(750)}
         rounded="lg"
-        m="6"
+        m="2"
         py="10"
         px="6"
-        h="250"
+        h={apx(570)}
         justifyContent="center"
         w={Dimensions.get('window').width}>
         <HStack space="2" justifyContent="center">
@@ -22,7 +27,7 @@ const ChartNotFound = ({ Mode }) => {
             fontSize="xl"
             fontStyle="normal"
             color="coolGray.500">
-            Data Not Found {Mode}
+            Data Not Found
           </Text>
         </HStack>
       </Box>
