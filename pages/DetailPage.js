@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { HStack, Button, Center } from 'native-base';
+import { HStack, Button, Center, Box } from 'native-base';
 
 import axios from 'axios';
 import moment from 'moment';
@@ -8,6 +8,7 @@ import { ScrollView, RefreshControl } from 'react-native-gesture-handler';
 import ChartNotFound from '../components/card/ChartNotFound';
 import DetailCard from '../components/card/DetailCard';
 import LineAreaChartComponent from '../components/charts/LineAreaChartComponent';
+import CardControllComponent from '../components/card/CardControllComponent';
 
 const DetailPage = ({ route }) => {
   const { deviceId } = route.params;
@@ -18,11 +19,14 @@ const DetailPage = ({ route }) => {
   const [periods, setPeriods] = useState('');
   const [timeDetailValue, setDetailTimeValue] = useState('');
   const [ppmValue, setPpmValue] = useState(0);
+  const [volumesvalue, setVolumesValue] = useState('50');
+  // const [valveStatus, setValveStatus] = useState(false);
+
+  const volumesValue = ['50', '100', '200'];
 
   const getAllData = useCallback(async () => {
     try {
-      //! measurements/${deviceId}?period=${time}
-      //!
+      //! /measurements/${deviceId}?period=${time}
       const response = await axios.get(
         `https://raft-backend-kgxdguejnq-et.a.run.app/measurements/${deviceId}?period=${periods}`,
       );
@@ -32,15 +36,6 @@ const DetailPage = ({ route }) => {
       );
 
       const ppmData = response.data.results.map(dataItem => dataItem.ppm);
-
-      // const showChartData = {
-      //   labels: timeData,
-      //   datasets: [
-      //     {
-      //       data: ppmData,
-      //     },
-      //   ],
-      // };
 
       console.log(response.data.results);
 
@@ -53,6 +48,18 @@ const DetailPage = ({ route }) => {
       console.error(error);
     }
   }, [deviceId, periods, setPpmValue]);
+
+  const openValve = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `https://raft-backend-kgxdguejnq-et.a.run.app/actions/valve/${deviceId}/flow/${volumesvalue}`,
+      );
+
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [deviceId, volumesvalue]);
 
   useEffect(() => {
     getAllData();
@@ -74,77 +81,58 @@ const DetailPage = ({ route }) => {
     [getAllData],
   );
 
+  const handleChangeVolume = useCallback(
+    volume => {
+      console.log(volume);
+      setVolumesValue(volume);
+      openValve();
+    },
+    [openValve],
+  );
+
   return (
     <ScrollView
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
       <DetailCard timeValue={timeDetailValue} ppmValue={ppmValue} />
-      {chartData.length === 0 ? (
-        <ChartNotFound />
-      ) : (
-        <LineAreaChartComponent
-          dateValue={xAxisDateValue}
-          ppmValue={yAxisPpmValue}
-        />
-      )}
-
-      <Center>
-        {/* <Box my="2" maxW="80" w="full" mx="1">
-          <HStack justifyItems="center" py="0">
-            <Button.Group isAttached size="xs">
-              <Button
-                borderLeftRadius="full"
-                variant={chartMode === 'IoT' ? 'solid' : 'outline'}
-                onPress={() => setChartMode('IoT')}
-                w="50%"
-                _text={{
-                  fontFamily: 'mono',
-                  fontWeight: '700',
-                  fontStyle: 'normal',
-                  fontSize: 'sm',
-                  color: chartMode === 'IoT' ? 'coolGray.50' : 'coolGray.800',
-                }}>
-                IoT
-              </Button>
-              <Button
-                borderRightRadius="full"
-                variant={chartMode === 'Manual' ? 'solid' : 'outline'}
-                onPress={() => setChartMode('Manual')}
-                w="50%"
-                _text={{
-                  fontFamily: 'mono',
-                  fontWeight: '700',
-                  fontStyle: 'normal',
-                  fontSize: 'sm',
-                  color:
-                    chartMode === 'Manual' ? 'coolGray.50' : 'coolGray.800',
-                }}>
-                Manual
-              </Button>
-            </Button.Group>
+      <Box bg="white">
+        {chartData.length === 0 ? (
+          <ChartNotFound />
+        ) : (
+          <LineAreaChartComponent
+            dateValue={xAxisDateValue}
+            ppmValue={yAxisPpmValue}
+          />
+        )}
+        <Center>
+          <HStack mb="2" space={16} alignItems="center" justifyItems="center">
+            {['1d', '1w'].map(time => {
+              return (
+                <Button
+                  key={time}
+                  size="lg"
+                  p={0}
+                  variant="ghost"
+                  _text={{
+                    fontFamily: 'mono',
+                    fontWeight: '500',
+                    fontStyle: 'normal',
+                    fontSize: 'md',
+                    color: time === periods ? 'yellow.500' : 'coolGray.700',
+                  }}
+                  onPress={() => handleChangeTime(time)}>
+                  {time}
+                </Button>
+              );
+            })}
           </HStack>
-        </Box> */}
-        <HStack mb="2" space={8} alignItems="center" justifyItems="center">
-          {['1d', '1w'].map(time => (
-            <Button
-              key={time}
-              size="lg"
-              p={1}
-              variant="ghost"
-              _text={{
-                fontFamily: 'mono',
-                fontWeight: '500',
-                fontStyle: 'normal',
-                fontSize: 'lg',
-                color: time === periods ? 'coolGray.500' : 'coolGray.800',
-              }}
-              onPress={() => handleChangeTime(time)}>
-              {time}
-            </Button>
-          ))}
-        </HStack>
-      </Center>
+        </Center>
+      </Box>
+      <CardControllComponent
+        volumes={volumesValue}
+        onPress={selectedValue => handleChangeVolume(selectedValue)}
+      />
     </ScrollView>
   );
 };
