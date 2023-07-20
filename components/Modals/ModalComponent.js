@@ -45,16 +45,18 @@ const ModalComponent = ({ isOpen, onClose, onSubmit }) => {
   const inputSchema = Yup.object().shape({
     id: Yup.string().max(6, 'Too Long!').required('Id Device Harus Diisi'),
     name: Yup.string().required('Nama Device Harus Diisi'),
-    thingerUrl: Yup.string().required('Url Harus Diisi'),
-    thingerBearer: Yup.string().required('Bearer Harus Diisi'),
+    url: Yup.string().required('Url Harus Diisi'),
+    token: Yup.string().required('Bearer Harus Diisi'),
   });
 
+  //! thingerUrl -> url
+  //! thingerBearer -> token
   const formik = useFormik({
     initialValues: {
       id: '',
       name: '',
-      thingerUrl: '',
-      thingerBearer: '',
+      url: '',
+      token: '',
     },
 
     validationSchema: inputSchema,
@@ -129,13 +131,13 @@ const ModalComponent = ({ isOpen, onClose, onSubmit }) => {
               </FormControl.Label>
               <Input
                 placeholder="Url"
-                onChangeText={formik.handleChange('thingerUrl')}
-                value={formik.values.thingerUrl}
-                isInvalid={!!formik.errors.thingerUrl}
+                onChangeText={formik.handleChange('url')}
+                value={formik.values.url}
+                isInvalid={!!formik.errors.url}
               />
-              {formik.errors.thingerUrl && formik.touched.thingerUrl && (
+              {formik.errors.url && formik.touched.url && (
                 <FormControl.ErrorMessage>
-                  {formik.errors.thingerUrl}
+                  {formik.errors.url}
                 </FormControl.ErrorMessage>
               )}
               <FormControl.HelperText
@@ -158,13 +160,13 @@ const ModalComponent = ({ isOpen, onClose, onSubmit }) => {
               </FormControl.Label>
               <Input
                 placeholder="Token"
-                onChangeText={formik.handleChange('thingerBearer')}
-                value={formik.values.thingerBearer}
-                isInvalid={!!formik.errors.thingerBearer}
+                onChangeText={formik.handleChange('token')}
+                value={formik.values.token}
+                isInvalid={!!formik.errors.token}
               />
-              {formik.errors.thingerBearer && formik.touched.thingerBearer && (
+              {formik.errors.token && formik.touched.token && (
                 <FormControl.ErrorMessage>
-                  {formik.errors.thingerBearer}
+                  {formik.errors.token}
                 </FormControl.ErrorMessage>
               )}
               <FormControl.HelperText
