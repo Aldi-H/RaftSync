@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import { API_URL } from '@env';
 
-export const useDeviceStore = create(set => {
+export const useDeviceDataStore = create(set => {
   return {
     devices: [],
     getAllDevices: async () => {

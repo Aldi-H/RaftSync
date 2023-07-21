@@ -3,22 +3,22 @@ import { Pressable, Fab, AddIcon, useDisclose, Divider } from 'native-base';
 import { ScrollView, RefreshControl } from 'react-native-gesture-handler';
 import { useIsFocused } from '@react-navigation/native';
 
-import { useDeviceStore } from '../utils/deviceDataStore';
+import { useDeviceDataStore } from '../utils/deviceDataStore';
 import ListComponent from '../components/Lists/ListComponent';
 import ModalComponent from '../components/Modals/ModalComponent';
 import SwipeListComponent from '../components/Lists/SwipeListComponent';
 
 const HomePage = ({ navigation }) => {
-  const { devices, getAllDevices, addDevice, deleteDevice } = useDeviceStore(
-    state => {
+  const { devices, getAllDevices, addDevice, deleteDevice } =
+    useDeviceDataStore(state => {
       return {
         devices: state.devices,
         getAllDevices: state.getAllDevices,
         addDevice: state.addDevice,
         deleteDevice: state.deleteDevice,
       };
-    },
-  );
+    });
+
   const { isOpen, onOpen, onClose } = useDisclose();
   const [refreshing, setRefreshing] = useState(false);
   const isFocussed = useIsFocused();
