@@ -69,14 +69,3 @@ const styles = StyleSheet.create({
 });
 
 export default SwipeListComponent;
-
-/* <View>
-      <Text>Swipe List Component</Text>
-      <NativeIcon
-        as={<AnimatedIcon name="trash" />}
-        size="32px"
-        color="white"
-        width="30px"
-        marginX="20px"
-      />
-    </View> */
