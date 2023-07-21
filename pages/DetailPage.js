@@ -1,103 +1,72 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { HStack, Button, Center, Box } from 'native-base';
-
-import axios from 'axios';
-import moment from 'moment';
 import { ScrollView, RefreshControl } from 'react-native-gesture-handler';
 
 import ChartNotFound from '../components/card/ChartNotFound';
 import DetailCard from '../components/card/DetailCard';
 import LineAreaChartComponent from '../components/charts/LineAreaChartComponent';
 import CardControllComponent from '../components/card/CardControllComponent';
+import { useChartDataStore } from '../utils/chartDataStore';
 
 const DetailPage = ({ route }) => {
   const { deviceId } = route.params;
-  const [refreshing, setRefreshing] = useState(false);
-  const [chartData, setChartData] = useState([]);
-  const [xAxisDateValue, setXAxisDateValue] = useState([]);
-  const [yAxisPpmValue, setYAxisPpmValue] = useState([]);
-  const [periods, setPeriods] = useState('');
-  const [timeDetailValue, setDetailTimeValue] = useState('');
-  const [ppmValue, setPpmValue] = useState(0);
-  const [volumesvalue, setVolumesValue] = useState('50');
-  // const [valveStatus, setValveStatus] = useState(false);
+  const {
+    chartDatas,
+    periods,
+    changePeriods,
+    getAllChartData,
+    xAxisDateValue,
+    yAxisPpmValue,
+    timeDetailValue,
+    ppmDetailValue,
+    openValve,
+  } = useChartDataStore(state => ({
+    chartDatas: state.chartDatas,
+    periods: state.periods,
+    changePeriods: state.changePeriods,
+    getAllChartData: state.getAllChartData,
+    xAxisDateValue: state.xAxisDateValue,
+    yAxisPpmValue: state.yAxisPpmValue,
+    timeDetailValue: state.timeDetailValue,
+    ppmDetailValue: state.ppmDetailValue,
+    openValve: state.openValve,
+  }));
 
+  const [refreshing, setRefreshing] = useState(false);
   const volumesValue = ['50', '100', '200'];
 
-  const getAllData = useCallback(async () => {
-    try {
-      //! /measurements/${deviceId}?period=${time}
-      const response = await axios.get(
-        `https://raft-backend-kgxdguejnq-et.a.run.app/measurements/${deviceId}?period=${periods}`,
-      );
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    getAllChartData(deviceId, '');
+    changePeriods('');
+    setRefreshing(false);
+  }, [getAllChartData]);
 
-      const timeData = response.data.results.map(dataItem =>
-        moment(dataItem.createdAt).utcOffset('+0700').format('D MMM YY'),
-      );
+  const handleChangePeriods = async period => {
+    await getAllChartData(deviceId, period);
+    changePeriods(period);
+  };
 
-      const ppmData = response.data.results.map(dataItem => dataItem.ppm);
-
-      console.log(response.data.results);
-
-      setChartData(response.data.results);
-      setXAxisDateValue(timeData);
-      setYAxisPpmValue(ppmData);
-      setDetailTimeValue(timeData[timeData.length - 1]);
-      setPpmValue(ppmData[ppmData.length - 1]);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [deviceId, periods, setPpmValue]);
-
-  const openValve = useCallback(async () => {
-    try {
-      const response = await axios.get(
-        `https://raft-backend-kgxdguejnq-et.a.run.app/actions/valve/${deviceId}/flow/${volumesvalue}`,
-      );
-
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [deviceId, volumesvalue]);
+  const handleChangeVolume = async volume => {
+    console.log(volume);
+    await openValve(deviceId, volume);
+  };
 
   useEffect(() => {
-    getAllData();
-  }, [getAllData]);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    getAllData();
-    setPeriods('');
-    setPpmValue(0);
-    setRefreshing(false);
-  }, [getAllData]);
-
-  const handleChangeTime = useCallback(
-    time => {
-      setPeriods(time);
-      getAllData();
-    },
-    [getAllData],
-  );
-
-  const handleChangeVolume = useCallback(
-    volume => {
-      console.log(volume);
-      setVolumesValue(volume);
-      openValve();
-    },
-    [openValve],
-  );
+    getAllChartData(deviceId, periods);
+  }, [getAllChartData]);
 
   return (
     <ScrollView
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
-      <DetailCard timeValue={timeDetailValue} ppmValue={ppmValue} />
+      <DetailCard
+        timeValue={chartDatas.length === 0 ? '-' : timeDetailValue}
+        ppmValue={chartDatas.length === 0 ? 0 : ppmDetailValue}
+      />
       <Box bg="white">
-        {chartData.length === 0 ? (
+        {chartDatas.length === 0 ? (
           <ChartNotFound />
         ) : (
           <LineAreaChartComponent
@@ -107,10 +76,10 @@ const DetailPage = ({ route }) => {
         )}
         <Center>
           <HStack mb="2" space={16} alignItems="center" justifyItems="center">
-            {['1d', '1w'].map(time => {
+            {['1d', '1w'].map(period => {
               return (
                 <Button
-                  key={time}
+                  key={period}
                   size="lg"
                   p={0}
                   variant="ghost"
@@ -119,10 +88,10 @@ const DetailPage = ({ route }) => {
                     fontWeight: '500',
                     fontStyle: 'normal',
                     fontSize: 'md',
-                    color: time === periods ? 'yellow.500' : 'coolGray.700',
+                    color: period === periods ? 'yellow.500' : 'coolGray.700',
                   }}
-                  onPress={() => handleChangeTime(time)}>
-                  {time}
+                  onPress={() => handleChangePeriods(period)}>
+                  {period}
                 </Button>
               );
             })}
