@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Pressable, Fab, AddIcon, useDisclose } from 'native-base';
+import { Pressable, Fab, AddIcon, useDisclose, Divider } from 'native-base';
 import { ScrollView, RefreshControl } from 'react-native-gesture-handler';
 import { useIsFocused } from '@react-navigation/native';
 
 import { useDeviceStore } from '../utils/deviceDataStore';
 import ListComponent from '../components/Lists/ListComponent';
 import ModalComponent from '../components/Modals/ModalComponent';
+import SwipeListComponent from '../components/Lists/SwipeListComponent';
 
 const HomePage = ({ navigation }) => {
   const { devices, getAllDevices, addDevice, deleteDevice } = useDeviceStore(
@@ -18,9 +19,9 @@ const HomePage = ({ navigation }) => {
       };
     },
   );
-  const isFocussed = useIsFocused();
   const { isOpen, onOpen, onClose } = useDisclose();
   const [refreshing, setRefreshing] = useState(false);
+  const isFocussed = useIsFocused();
 
   const navigationDetails = deviceId => {
     navigation.navigate('Detail Page', { deviceId });
@@ -59,15 +60,19 @@ const HomePage = ({ navigation }) => {
       />
       {devices.map(item => {
         return (
-          <Pressable key={item.id} onPress={() => navigationDetails(item.id)}>
-            <ListComponent
-              deviceName={item.name}
-              deviceId={item.id}
-              onPress={() => {
-                handleDeleteDevice(item.id);
-              }}
-            />
-          </Pressable>
+          <SwipeListComponent
+            key={item.id}
+            onDelete={() => handleDeleteDevice(item.id)}>
+            <Pressable key={item.id} onPress={() => navigationDetails(item.id)}>
+              <ListComponent deviceName={item.name} deviceId={item.id} />
+              <Divider
+                _light={{
+                  bg: 'muted.300',
+                }}
+                thickness="2"
+              />
+            </Pressable>
+          </SwipeListComponent>
         );
       })}
       {isFocussed ? (
