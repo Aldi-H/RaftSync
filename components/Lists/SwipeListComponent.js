@@ -34,7 +34,7 @@ const SwipeListComponent = ({ children, onDelete }) => {
       <RectButton style={styles.rightAction}>
         <NativeIcon
           as={<AnimatedIcon name="trash" />}
-          size="32px"
+          size="24px"
           color="white"
           width="30px"
           marginX="20px"
