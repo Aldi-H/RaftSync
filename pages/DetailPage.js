@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { HStack, Button, Center, Box } from 'native-base';
+import { HStack, Button, Center, Box, useToast } from 'native-base';
 import { ScrollView, RefreshControl } from 'react-native-gesture-handler';
 
 import ChartNotFound from '../components/card/ChartNotFound';
@@ -7,9 +7,11 @@ import DetailCard from '../components/card/DetailCard';
 import LineAreaChartComponent from '../components/charts/LineAreaChartComponent';
 import CardControllComponent from '../components/card/CardControllComponent';
 import { useChartDataStore } from '../utils/chartDataStore';
+import NotificationToastComponent from '../components/toast/NotificationToastComponent';
 
 const DetailPage = ({ route }) => {
   const { deviceId } = route.params;
+
   const {
     chartDatas,
     periods,
@@ -32,6 +34,7 @@ const DetailPage = ({ route }) => {
     openValve: state.openValve,
   }));
 
+  const toast = useToast();
   const [refreshing, setRefreshing] = useState(false);
   const volumesValue = ['50', '100', '200'];
 
@@ -48,8 +51,12 @@ const DetailPage = ({ route }) => {
   };
 
   const handleChangeVolume = async volume => {
-    console.log(volume);
+    // console.log(`pressedVolume ${volume}, valveStatus ${valveStatus}`);
     await openValve(deviceId, volume);
+    toast.show({
+      placement: 'top',
+      render: () => <NotificationToastComponent volume={volume} />,
+    });
   };
 
   useEffect(() => {
