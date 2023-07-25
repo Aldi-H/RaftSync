@@ -7,7 +7,7 @@ import Icon from 'react-native-vector-icons/Feather';
 
 const AnimatedIcon = Animated.createAnimatedComponent(Icon);
 
-const SwipeListComponent = ({ children, onDelete }) => {
+const SwipeListComponent = ({ children, onDelete, isOpen }) => {
   const swipeableRowRef = useRef(null);
 
   useEffect(() => {
@@ -15,6 +15,12 @@ const SwipeListComponent = ({ children, onDelete }) => {
       swipeableRowRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isOpen && swipeableRowRef.current) {
+      swipeableRowRef.current.close();
+    }
+  }, [isOpen]);
 
   const handleSwipeableRightOpen = () => {
     if (onDelete) {

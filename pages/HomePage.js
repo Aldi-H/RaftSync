@@ -1,5 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Pressable, Fab, AddIcon, useDisclose, Divider } from 'native-base';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Pressable,
+  Fab,
+  AddIcon,
+  useDisclose,
+  Divider,
+  View,
+} from 'native-base';
 import { ScrollView, RefreshControl } from 'react-native-gesture-handler';
 import { useIsFocused } from '@react-navigation/native';
 
@@ -7,6 +14,7 @@ import { useDeviceDataStore } from '../utils/deviceDataStore';
 import ListComponent from '../components/Lists/ListComponent';
 import ModalComponent from '../components/Modals/ModalComponent';
 import SwipeListComponent from '../components/Lists/SwipeListComponent';
+import AlertDialogComponent from '../components/alert/AlertDialogComponent';
 
 const HomePage = ({ navigation }) => {
   const { devices, getAllDevices, addDevice, deleteDevice } =
@@ -22,6 +30,10 @@ const HomePage = ({ navigation }) => {
   const { isOpen, onOpen, onClose } = useDisclose();
   const [refreshing, setRefreshing] = useState(false);
   const isFocussed = useIsFocused();
+  const [isOpenAlert, setIsOpenAlert] = useState(false);
+  const onCLoseAlert = () => setIsOpenAlert(false);
+  const [isSwipeListOpen, setIsSwipeListOpen] = useState(false);
+  const canceRef = useRef();
 
   const navigationDetails = deviceId => {
     navigation.navigate('Detail Page', { deviceId });
@@ -36,6 +48,12 @@ const HomePage = ({ navigation }) => {
   const handleDeleteDevice = async deviceId => {
     await deleteDevice(deviceId);
     getAllDevices();
+    onCLoseAlert();
+
+    if (isSwipeListOpen) {
+      setIsOpenAlert(false);
+      setIsSwipeListOpen(false);
+    }
   };
 
   const onRefresh = useCallback(async () => {
@@ -60,21 +78,41 @@ const HomePage = ({ navigation }) => {
       />
       {devices.map(item => {
         return (
-          <SwipeListComponent
-            key={item.id}
-            onDelete={() => handleDeleteDevice(item.id)}>
-            <Pressable key={item.id} onPress={() => navigationDetails(item.id)}>
-              <ListComponent deviceName={item.name} deviceId={item.id} />
-              <Divider
-                _light={{
-                  bg: 'muted.300',
-                }}
-                thickness="2"
-              />
-            </Pressable>
-          </SwipeListComponent>
+          <View key={item.id}>
+            <AlertDialogComponent
+              leastDestructiveRef={canceRef}
+              isOpen={isOpenAlert}
+              onClose={() => {
+                setIsOpenAlert(false);
+                setIsSwipeListOpen(false);
+              }}
+              onDeleteItem={() => handleDeleteDevice(item.id)}
+            />
+            <SwipeListComponent
+              isOpen={isSwipeListOpen}
+              onDelete={() => {
+                setIsOpenAlert(!isOpenAlert);
+                setIsSwipeListOpen(!isSwipeListOpen);
+              }}>
+              <Pressable
+                key={item.id}
+                onPress={() => {
+                  navigationDetails(item.id);
+                  setIsSwipeListOpen(true);
+                }}>
+                <ListComponent deviceName={item.name} deviceId={item.id} />
+                <Divider
+                  _light={{
+                    bg: 'muted.300',
+                  }}
+                  thickness="2"
+                />
+              </Pressable>
+            </SwipeListComponent>
+          </View>
         );
       })}
+
       {isFocussed ? (
         <Fab
           position="absolute"
